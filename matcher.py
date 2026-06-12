@@ -31,14 +31,24 @@ def match_jobs(jobs: list[dict], skills: list[str], pref_location: str, min_sala
                 score += 1
                 
         
-        if pref_loc_lower in job_loc_lower:
+        # Location matching (integrated with Location Intelligence Agent)
+        if "location_score" in job:
+            score += job["location_score"]
+        elif pref_loc_lower and pref_loc_lower in job_loc_lower:
             score += 1
             
         
-        if min_salary is not None:
+        # Salary matching (integrated with Salary Intelligence Agent)
+        if "salary_score" in job:
+            score += job["salary_score"]
+        elif min_salary is not None:
             job_salary = job.get("median_salary_value")
             if job_salary is not None and job_salary >= min_salary:
                 score += 1
+
+        # Work preferences compatibility (integrated with Work Preference Agent)
+        if "compatibility_score" in job:
+            score += job["compatibility_score"]
                 
         
         job_scored = job.copy()
