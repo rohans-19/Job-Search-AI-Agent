@@ -364,6 +364,123 @@ def get_saved_jobs(application_status: Optional[str] = None) -> list[dict]:
 
 # ---------------------------------------------------------------------------
 
+VALID_APPLICATION_STATUSES: list[str] = [
+    "Saved", "Applied", "Interview", "Offer", "Rejected", "Fetched",
+]
+
+
+def update_application_status(job_id: int, new_status: str) -> bool:
+    """
+    Updates the application_status of a saved job.
+
+    Args:
+        job_id (int):     The id of the row in saved_jobs.
+        new_status (str): One of VALID_APPLICATION_STATUSES.
+
+    Returns:
+        bool: True if a row was updated, False otherwise.
+    """
+    if new_status not in VALID_APPLICATION_STATUSES:
+        logger.warning("update_application_status: invalid status '%s'.", new_status)
+        return False
+    try:
+        with _get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "UPDATE saved_jobs SET application_status = ? WHERE id = ?;",
+                (new_status, job_id),
+            )
+            conn.commit()
+            updated = cursor.rowcount > 0
+            if updated:
+                logger.info("Updated job id=%d to status '%s'.", job_id, new_status)
+            return updated
+    except sqlite3.Error as exc:
+        logger.error("Error updating status for job id=%d: %s", job_id, exc)
+        return False
+
+
+def delete_saved_job(job_id: int) -> bool:
+    """
+    Permanently deletes a saved job by id.
+
+    Returns:
+        bool: True if a row was deleted, False otherwise.
+    """
+    try:
+        with _get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM saved_jobs WHERE id = ?;", (job_id,))
+            conn.commit()
+            deleted = cursor.rowcount > 0
+            if deleted:
+                logger.info("Deleted saved job id=%d.", job_id)
+            return deleted
+    except sqlite3.Error as exc:
+        logger.error("Error deleting saved job id=%d: %s", job_id, exc)
+        return False
+
+
+def get_application_stats() -> dict:
+    """
+    Returns a count of saved jobs grouped by application_status.
+    User-bookmarked statuses only — auto-'Fetched' rows are excluded so the
+    tracker reflects genuine pipeline activity, not background persistence.
+
+    Returns:
+        dict: {status: count}. Empty dict on error.
+    """
+    stats: dict = {}
+    try:
+        with _get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT application_status, COUNT(*) AS n FROM saved_jobs "
+                "WHERE application_status != 'Fetched' "
+                "GROUP BY application_status;"
+            )
+            for row in cursor.fetchall():
+                stats[row["application_status"]] = row["n"]
+    except sqlite3.Error as exc:
+        logger.error("Error retrieving application stats: %s", exc)
+    return stats
+
+
+def get_tracked_jobs() -> list[dict]:
+    """
+    Returns user-tracked jobs (everything except auto-'Fetched' rows),
+    newest first. These are the jobs that appear in the Application Tracker.
+    """
+    try:
+        with _get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT * FROM saved_jobs WHERE application_status != 'Fetched' "
+                "ORDER BY saved_date DESC;"
+            )
+            return [dict(row) for row in cursor.fetchall()]
+    except sqlite3.Error as exc:
+        logger.error("Error retrieving tracked jobs: %s", exc)
+        return []
+
+
+def get_search_history(limit: int = 50) -> list[dict]:
+    """
+    Returns the most recent search-history records (role + location + timestamp).
+    """
+    try:
+        with _get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT * FROM job_search_history ORDER BY timestamp DESC LIMIT ?;",
+                (limit,),
+            )
+            return [dict(row) for row in cursor.fetchall()]
+    except sqlite3.Error as exc:
+        logger.error("Error retrieving search history: %s", exc)
+        return []
+
+
 def save_search_history(
     search_role: str,
     search_location: Optional[str] = None,

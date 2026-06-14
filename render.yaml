@@ -1,0 +1,25 @@
+# render.yaml — Render Blueprint for the Job Search AI Agent (Streamlit)
+# Deploy: push to GitHub, then in Render → "New +" → "Blueprint" → pick this repo.
+# Set the secret env vars (ADZUNA_*, JOOBLE_API_KEY) in the Render dashboard.
+services:
+  - type: web
+    name: job-search-ai
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
+    startCommand: "streamlit run app.py --server.port $PORT --server.address 0.0.0.0 --server.headless true"
+    healthCheckPath: /_stcore/health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      - key: JOB_FETCH_COUNT
+        value: "15"
+      # Secrets — leave unset here; fill them in the Render dashboard.
+      - key: ADZUNA_APP_ID
+        sync: false
+      - key: ADZUNA_APP_KEY
+        sync: false
+      - key: JOOBLE_API_KEY
+        sync: false
