@@ -31,6 +31,21 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def redact(text: object, *secrets: str | None) -> str:
+    """Return ``str(text)`` with any of ``secrets`` replaced by '***REDACTED***'.
+
+    Connectors embed API keys in request URLs/query strings. The `requests`
+    library copies the full URL into its exception messages, so logging a raw
+    exception would leak the key into the application logs. Always route
+    connector error text through this helper before logging.
+    """
+    out = str(text)
+    for secret in secrets:
+        if secret:
+            out = out.replace(secret, "***REDACTED***")
+    return out
+
+
 def normalize(
     title: str,
     company: str,

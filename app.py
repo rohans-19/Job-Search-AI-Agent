@@ -109,19 +109,44 @@ ui.render_hero(
 # ── Sidebar ─────────────────────────────────────────────────────────────────
 with st.sidebar:
     st.markdown("### ⚙️ API Credentials")
-    st.caption("Keys are pre-loaded from `.env`. Override here for this session.")
-    app_id = st.text_input("Adzuna App ID", value=config.ADZUNA_APP_ID or "",
-                           placeholder="Set ADZUNA_APP_ID in .env")
-    app_key = st.text_input("Adzuna App Key", value=config.ADZUNA_APP_KEY or "",
-                            type="password", placeholder="Set ADZUNA_APP_KEY in .env")
-    jooble_key = st.text_input("Jooble API Key", value=config.JOOBLE_API_KEY or "",
-                               type="password", placeholder="Set JOOBLE_API_KEY in .env")
+    st.caption("Server keys stay hidden. They are never shown here — only their status.")
+
+    def _cred_row(label: str, configured: bool) -> None:
+        badge = ("<span style='color:#10b981;font-weight:700;'>● Configured</span>"
+                 if configured
+                 else "<span style='color:#f59e0b;font-weight:700;'>○ Not set</span>")
+        st.markdown(
+            f"<div style='display:flex;justify-content:space-between;"
+            f"font-size:0.85rem;margin:0.15rem 0;'>"
+            f"<span>{label}</span>{badge}</div>",
+            unsafe_allow_html=True,
+        )
+
+    _cred_row("Adzuna App ID", bool(config.ADZUNA_APP_ID))
+    _cred_row("Adzuna App Key", bool(config.ADZUNA_APP_KEY))
+    _cred_row("Jooble API Key", bool(config.JOOBLE_API_KEY))
+
+    with st.expander("🔑 Override keys for this session", expanded=False):
+        st.caption("Leave blank to use the keys configured on the server. "
+                   "Values entered here are not saved or displayed after submit.")
+        app_id_override = st.text_input("Adzuna App ID", value="", type="password",
+                                        placeholder="Override Adzuna App ID")
+        app_key_override = st.text_input("Adzuna App Key", value="", type="password",
+                                         placeholder="Override Adzuna App Key")
+        jooble_override = st.text_input("Jooble API Key", value="", type="password",
+                                        placeholder="Override Jooble API Key")
+
+    # Effective credentials: a session override takes precedence over the
+    # server-configured key. Secrets themselves are never written into widgets.
+    app_id = (app_id_override.strip() or config.ADZUNA_APP_ID or "")
+    app_key = (app_key_override.strip() or config.ADZUNA_APP_KEY or "")
+    jooble_key = (jooble_override.strip() or config.JOOBLE_API_KEY or "")
 
     if has_any_api_credentials(app_id, app_key, jooble_key):
         st.success("✅ At least one live connector is configured.")
     else:
         st.warning("⚠️ No API keys set — searches will return no live jobs. "
-                   "Add keys above or in `.env`.")
+                   "Add keys in the override panel or your server `.env`.")
 
     st.divider()
     st.markdown("### 📂 Saved Jobs")

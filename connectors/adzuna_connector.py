@@ -18,7 +18,7 @@ This connector converts them:
 
 import logging
 import requests
-from .base import BaseConnector, normalize
+from .base import BaseConnector, normalize, redact
 
 logger = logging.getLogger(__name__)
 
@@ -105,11 +105,13 @@ class AdzunaConnector(BaseConnector):
         except requests.exceptions.Timeout:
             logger.error("[Adzuna] Request timed out for role='%s', location='%s'.", role, location)
         except requests.exceptions.HTTPError as exc:
-            logger.error("[Adzuna] HTTP error %s: %s", exc.response.status_code, exc)
+            logger.error("[Adzuna] HTTP error %s: %s", exc.response.status_code,
+                         redact(exc, self._app_id, self._app_key))
         except requests.exceptions.RequestException as exc:
-            logger.error("[Adzuna] Network error: %s", exc)
+            logger.error("[Adzuna] Network error: %s", redact(exc, self._app_id, self._app_key))
         except (KeyError, ValueError, TypeError) as exc:
-            logger.error("[Adzuna] Unexpected response structure: %s", exc)
+            logger.error("[Adzuna] Unexpected response structure: %s",
+                         redact(exc, self._app_id, self._app_key))
 
         logger.info("[Adzuna] Fetched %d jobs for '%s' in '%s'.", len(jobs), role, location)
         return jobs

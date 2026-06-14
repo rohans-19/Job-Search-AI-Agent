@@ -22,7 +22,7 @@ LPA float; if parsing fails it stores None.
 import logging
 import re
 import requests
-from .base import BaseConnector, normalize
+from .base import BaseConnector, normalize, redact
 
 logger = logging.getLogger(__name__)
 
@@ -108,11 +108,12 @@ class JoobleConnector(BaseConnector):
         except requests.exceptions.Timeout:
             logger.error("[Jooble] Request timed out for role='%s', location='%s'.", role, location)
         except requests.exceptions.HTTPError as exc:
-            logger.error("[Jooble] HTTP error %s: %s", exc.response.status_code, exc)
+            logger.error("[Jooble] HTTP error %s: %s", exc.response.status_code,
+                         redact(exc, self._api_key))
         except requests.exceptions.RequestException as exc:
-            logger.error("[Jooble] Network error: %s", exc)
+            logger.error("[Jooble] Network error: %s", redact(exc, self._api_key))
         except (KeyError, ValueError, TypeError) as exc:
-            logger.error("[Jooble] Unexpected response structure: %s", exc)
+            logger.error("[Jooble] Unexpected response structure: %s", redact(exc, self._api_key))
 
         return jobs
 

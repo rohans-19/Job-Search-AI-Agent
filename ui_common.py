@@ -106,55 +106,82 @@ _SKILL_CATEGORIES: dict[str, set[str]] = {
 # ---------------------------------------------------------------------------
 
 def inject_css() -> None:
-    """Inject the shared stylesheet. Safe to call on every page."""
+    """Inject the shared glassmorphism stylesheet. Safe to call on every page."""
     st.markdown(
         """
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap');
 
         :root {
-            --ink:#18181b; --muted:#71717a; --canvas:#fafafa; --surface:#ffffff;
-            --border:#e4e4e7; --accent:#059669; --accent-dark:#047857;
-            --accent-soft:#ecfdf5; --shadow:0 18px 40px -22px rgba(24,24,27,0.18);
+            --ink:#0f172a; --muted:#64748b; --canvas:#eef2f7; --surface:#ffffff;
+            --border:rgba(148,163,184,0.28); --accent:#059669; --accent-dark:#047857;
+            --accent-soft:#ecfdf5;
+            --glass:rgba(255,255,255,0.62);
+            --glass-strong:rgba(255,255,255,0.78);
+            --glass-border:rgba(255,255,255,0.65);
+            --glass-shadow:0 12px 40px -16px rgba(15,23,42,0.22), inset 0 1px 0 rgba(255,255,255,0.6);
+            --blur:saturate(180%) blur(20px);
         }
 
         html, body, [class*="css"], .stMarkdown, p, span, div, label, input, textarea, button {
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
-        h1, h2, h3, h4, .hero h1, .job-title { font-family: 'Outfit', sans-serif; letter-spacing:-0.02em; }
-        .stApp { background: var(--canvas); }
+        h1, h2, h3, h4, .hero h1, .job-title { font-family: 'Outfit', sans-serif; letter-spacing:-0.02em; color: var(--ink); }
 
-        /* ── Hero ── */
+        /* ── Ambient gradient backdrop (the canvas glass sits on) ── */
+        .stApp {
+            background:
+                radial-gradient(circle at 12% 18%, rgba(16,185,129,0.20), transparent 42%),
+                radial-gradient(circle at 88% 12%, rgba(45,212,191,0.18), transparent 40%),
+                radial-gradient(circle at 78% 88%, rgba(59,130,246,0.14), transparent 45%),
+                radial-gradient(circle at 20% 92%, rgba(99,102,241,0.12), transparent 45%),
+                linear-gradient(135deg, #eef2f7 0%, #e6eef0 50%, #eaf0f6 100%);
+            background-attachment: fixed;
+        }
+        .block-container { padding-top: 2.2rem; }
+
+        /* ── Hero (dark frosted glass) ── */
         .hero {
             position: relative; overflow: hidden;
-            background: linear-gradient(135deg, #18181b 0%, #18302b 58%, #134e4a 100%);
-            border-radius: 26px; padding: 2.6rem 2.6rem 2.3rem;
-            margin-bottom: 1.8rem; color: #fafafa;
-            box-shadow: 0 30px 60px -30px rgba(19,78,74,0.45);
+            background: linear-gradient(135deg, rgba(15,23,42,0.92) 0%, rgba(19,49,43,0.90) 55%, rgba(6,78,74,0.90) 100%);
+            -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+            border-radius: 28px; padding: 2.7rem 2.7rem 2.4rem;
+            margin-bottom: 1.8rem; color: #f8fafc;
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: 0 30px 70px -34px rgba(6,78,74,0.55), inset 0 1px 0 rgba(255,255,255,0.12);
         }
         .hero::after {
-            content:""; position:absolute; top:-40%; right:-10%; width:380px; height:380px;
-            background: radial-gradient(circle, rgba(5,150,105,0.35) 0%, rgba(5,150,105,0) 70%);
+            content:""; position:absolute; top:-45%; right:-12%; width:420px; height:420px;
+            background: radial-gradient(circle, rgba(16,185,129,0.40) 0%, rgba(16,185,129,0) 70%);
             pointer-events:none;
         }
-        .hero h1 { font-size: 2.35rem; font-weight: 800; margin: 0 0 0.4rem; line-height:1.05; }
-        .hero p  { font-size: 1.02rem; color: rgba(250,250,250,0.72); margin: 0; max-width: 60ch; }
+        .hero::before {
+            content:""; position:absolute; bottom:-55%; left:-8%; width:360px; height:360px;
+            background: radial-gradient(circle, rgba(45,212,191,0.28) 0%, rgba(45,212,191,0) 70%);
+            pointer-events:none;
+        }
+        .hero h1 { font-size: 2.4rem; font-weight: 800; margin: 0 0 0.4rem; line-height:1.05; color:#f8fafc; position:relative; }
+        .hero p  { font-size: 1.02rem; color: rgba(248,250,252,0.74); margin: 0; max-width: 60ch; position:relative; }
         .hero .badge {
-            display: inline-flex; align-items:center; gap:6px;
-            background: rgba(5,150,105,0.16); color: #6ee7b7;
-            border: 1px solid rgba(110,231,183,0.32); border-radius: 999px;
-            padding: 0.28rem 0.95rem; font-size: 0.74rem; margin-bottom: 1rem;
-            font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase;
+            display: inline-flex; align-items:center; gap:6px; position:relative;
+            background: rgba(16,185,129,0.18); color: #6ee7b7;
+            border: 1px solid rgba(110,231,183,0.36); border-radius: 999px;
+            padding: 0.3rem 0.95rem; font-size: 0.72rem; margin-bottom: 1rem;
+            font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+            -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
         }
 
-        /* ── Cards / panels ── */
+        /* ── Glass cards / panels ── */
         .search-card {
-            background: var(--surface); border-radius: 22px; padding: 2rem 2.2rem 1.7rem;
-            box-shadow: var(--shadow); margin-bottom: 2rem; border: 1px solid var(--border);
+            background: var(--glass);
+            -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+            border-radius: 24px; padding: 2rem 2.2rem 1.7rem;
+            box-shadow: var(--glass-shadow); margin-bottom: 2rem;
+            border: 1px solid var(--glass-border);
         }
         .search-card h3 {
-            font-size: 1.05rem; font-weight: 700; color: var(--ink); margin: 0 0 1.2rem;
-            padding-bottom: 0.7rem; border-bottom: 1px solid #f1f1f3;
+            font-size: 1.08rem; font-weight: 700; color: var(--ink); margin: 0 0 1.2rem;
+            padding-bottom: 0.7rem; border-bottom: 1px solid rgba(148,163,184,0.22);
         }
         .section-label {
             font-size: 0.74rem; font-weight: 700; color: var(--muted); text-transform: uppercase;
@@ -163,72 +190,114 @@ def inject_css() -> None:
         .required-dot {
             display:inline-block; width:6px; height:6px; background:var(--accent);
             border-radius:50%; margin-left:5px; vertical-align:middle;
+            box-shadow:0 0 0 3px rgba(5,150,105,0.18);
         }
 
-        /* ── Job card ── */
+        /* ── Glass job card ── */
         .job-card {
-            background: var(--surface); border-radius: 18px; padding: 1.5rem 1.8rem; margin-bottom: 1.1rem;
-            box-shadow: 0 1px 2px rgba(24,24,27,0.04), 0 14px 30px -22px rgba(24,24,27,0.22);
-            border: 1px solid var(--border); border-left: 3px solid var(--accent);
+            background: var(--glass-strong);
+            -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+            border-radius: 20px; padding: 1.5rem 1.8rem; margin-bottom: 1.1rem;
+            box-shadow: var(--glass-shadow);
+            border: 1px solid var(--glass-border); border-left: 3px solid var(--accent);
             transition: box-shadow .25s cubic-bezier(.16,1,.3,1), transform .25s cubic-bezier(.16,1,.3,1);
         }
-        .job-card:hover { transform: translateY(-2px); box-shadow: 0 20px 40px -24px rgba(5,150,105,0.30); }
+        .job-card:hover { transform: translateY(-3px); box-shadow: 0 26px 50px -26px rgba(5,150,105,0.40), inset 0 1px 0 rgba(255,255,255,0.6); }
         .job-title { font-size: 1.12rem; font-weight: 700; color: var(--ink); margin-bottom: 0.2rem; }
         .job-company { font-size: 0.92rem; color: var(--accent-dark); font-weight: 600; margin-bottom: 0.6rem; }
         .mono { font-family:'JetBrains Mono', monospace; }
 
         .tag {
-            display:inline-block; background:#f4f4f5; color:#52525b; border:1px solid #ececef;
+            display:inline-block; background:rgba(241,245,249,0.7); color:#475569; border:1px solid rgba(148,163,184,0.3);
             border-radius:999px; padding:0.2rem 0.7rem; font-size:0.78rem; font-weight:600;
             margin-right:0.35rem; margin-top:0.3rem;
         }
-        .tag-salary { background: var(--accent-soft); color: var(--accent-dark); border-color:#bbf7d0; }
-        .tag-score  { background:#fff7ed; color:#9a3412; border-color:#fed7aa; }
+        .tag-salary { background: rgba(236,253,245,0.85); color: var(--accent-dark); border-color:rgba(110,231,183,0.5); }
+        .tag-score  { background:rgba(255,247,237,0.85); color:#9a3412; border-color:rgba(254,215,170,0.7); }
         .tag-score .mono { font-weight:600; }
 
         .apply-btn {
-            display:inline-block; background:var(--ink); color:#fff !important; border-radius:10px;
-            padding:0.4rem 1.05rem; font-size:0.84rem; font-weight:600; text-decoration:none !important;
-            margin-top:0.85rem; transition: transform .15s ease;
+            display:inline-block; background:var(--ink); color:#fff !important; border-radius:11px;
+            padding:0.42rem 1.05rem; font-size:0.84rem; font-weight:600; text-decoration:none !important;
+            margin-top:0.85rem; transition: transform .15s ease, box-shadow .2s ease;
+            box-shadow:0 8px 18px -10px rgba(15,23,42,0.6);
         }
         .apply-btn:hover { transform: translateY(-1px); }
         .apply-btn:active { transform: translateY(0px) scale(0.98); }
 
-        /* ── Stats strip ── */
+        /* ── Stats strip (frosted dark) ── */
         .stats-strip {
-            background: linear-gradient(100deg, #18181b 0%, #134e4a 100%); border-radius: 16px;
-            padding: 1rem 1.5rem; color: #fafafa; font-weight: 600; text-align: center;
+            background: linear-gradient(100deg, rgba(15,23,42,0.92) 0%, rgba(6,78,74,0.90) 100%);
+            -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+            border-radius: 16px; border:1px solid rgba(255,255,255,0.12);
+            padding: 1rem 1.5rem; color: #f8fafc; font-weight: 600; text-align: center;
             margin-bottom: 1.6rem; font-size: 0.98rem;
+            box-shadow:0 18px 40px -24px rgba(6,78,74,0.5);
         }
-        .stats-strip .mono { color:#6ee7b7; }
+        .stats-strip .mono, .stats-strip strong { color:#6ee7b7; }
 
-        /* ── Score tiles (resume / company pages) ── */
+        /* ── Score tiles ── */
         .tile {
-            border-radius:16px; padding:1rem 1.15rem; border:1px solid var(--border); background:var(--surface);
+            border-radius:18px; padding:1rem 1.15rem; border:1px solid var(--glass-border);
+            background:var(--glass); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+            box-shadow: var(--glass-shadow);
         }
         .tile .lbl { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); font-weight:700; }
         .tile .val { font-size:1.5rem; font-weight:800; font-family:'Outfit',sans-serif; margin-top:0.15rem; }
 
-        /* ── Streamlit overrides ── */
+        /* ── Streamlit control overrides ── */
         .stButton > button {
-            background: var(--accent); color: #fff; border: none; border-radius: 11px;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+            color: #fff; border: 1px solid rgba(255,255,255,0.18); border-radius: 12px;
             padding: 0.6rem 1.5rem; font-size: 0.92rem; font-weight: 600; width: 100%;
-            transition: transform .15s ease, background .2s ease; box-shadow: 0 8px 18px -10px rgba(5,150,105,0.6);
+            transition: transform .15s ease, box-shadow .2s ease, filter .2s ease;
+            box-shadow: 0 10px 24px -10px rgba(5,150,105,0.7);
         }
-        .stButton > button:hover { background: var(--accent-dark); }
+        .stButton > button:hover { filter:brightness(1.06); transform: translateY(-1px); box-shadow:0 16px 30px -12px rgba(5,150,105,0.75); }
         .stButton > button:active { transform: translateY(1px) scale(0.99); }
 
-        div[data-testid="stTextInput"] input, div[data-testid="stTextArea"] textarea {
-            border-radius: 11px; border: 1.5px solid var(--border); font-size: 0.93rem; padding: 0.55rem 0.85rem;
-            background: var(--surface);
+        div[data-testid="stTextInput"] input, div[data-testid="stTextArea"] textarea,
+        div[data-baseweb="select"] > div {
+            border-radius: 12px !important; border: 1.5px solid var(--border) !important;
+            font-size: 0.93rem; background: rgba(255,255,255,0.7) !important;
+            -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
         }
         div[data-testid="stTextInput"] input:focus, div[data-testid="stTextArea"] textarea:focus {
-            border-color: var(--accent); box-shadow: 0 0 0 3px rgba(5,150,105,0.14);
+            border-color: var(--accent) !important; box-shadow: 0 0 0 3px rgba(5,150,105,0.16) !important;
         }
-        [data-testid="stMetricValue"] { font-family:'Outfit',sans-serif; font-weight:800; }
-        [data-testid="stSidebar"] { background:#fbfbfc; border-right:1px solid var(--border); }
 
-        .divider-soft { border:none; border-top:1px solid #ececef; margin: 1.2rem 0; }
+        /* file uploader, expander & tabs as glass */
+        [data-testid="stFileUploaderDropzone"] {
+            background: rgba(255,255,255,0.55) !important; border-radius:16px !important;
+            border:1.5px dashed rgba(148,163,184,0.45) !important;
+            -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+        }
+        [data-testid="stExpander"] {
+            border:1px solid var(--glass-border) !important; border-radius:16px !important;
+            background: var(--glass) !important; overflow:hidden;
+            -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+        }
+        .stTabs [data-baseweb="tab-list"] { gap:6px; }
+        .stTabs [data-baseweb="tab"] {
+            background: rgba(255,255,255,0.5); border-radius:12px 12px 0 0;
+            padding:0.4rem 1rem;
+        }
+        .stTabs [aria-selected="true"] { background: var(--glass-strong); color: var(--accent-dark); }
+
+        [data-testid="stMetric"] {
+            background: var(--glass); border:1px solid var(--glass-border); border-radius:16px;
+            padding:0.8rem 1rem; box-shadow: var(--glass-shadow);
+            -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+        }
+        [data-testid="stMetricValue"] { font-family:'Outfit',sans-serif; font-weight:800; color:var(--ink); }
+
+        [data-testid="stSidebar"] {
+            background: rgba(255,255,255,0.55);
+            -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+            border-right:1px solid var(--glass-border);
+        }
+
+        .divider-soft { border:none; border-top:1px solid rgba(148,163,184,0.25); margin: 1.2rem 0; }
         .status-pill { display:inline-block; padding:2px 10px; border-radius:999px; font-size:0.72rem; font-weight:700; }
         footer { visibility: hidden; }
         #MainMenu { visibility: hidden; }
@@ -408,6 +477,15 @@ def status_pill_html(status: str) -> str:
 # Error messaging
 # ---------------------------------------------------------------------------
 
+def _redact_secrets(text: str) -> str:
+    """Strip any configured API keys out of a string before showing it."""
+    import config
+    for secret in (config.ADZUNA_APP_ID, config.ADZUNA_APP_KEY, config.JOOBLE_API_KEY):
+        if secret:
+            text = text.replace(secret, "***")
+    return text
+
+
 def friendly_api_error(exc: Exception) -> str:
     """Translate a raw exception into a clear, actionable user message."""
     text = str(exc).lower()
@@ -423,4 +501,4 @@ def friendly_api_error(exc: Exception) -> str:
     if "429" in text or "rate limit" in text:
         return ("The job API rate limit was hit. Wait a minute before searching again, "
                 "or reduce the number of results requested.")
-    return f"Something went wrong while contacting the job APIs: {exc}"
+    return f"Something went wrong while contacting the job APIs: {_redact_secrets(str(exc))}"
